@@ -1,0 +1,61 @@
+image: node:22
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - .npm/
+
+stages:
+  - test
+  - build
+  - deploy
+
+lint:
+  stage: test
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+  script:
+    - npm run lint
+
+format:
+  stage: test
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+  script:
+    - npx prettier --check .
+
+unit_test:
+  stage: test
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+  script:
+    - npm test
+
+build:
+  stage: build
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+  script:
+    - npm run build
+  artifacts:
+    name: site
+    paths:
+      - out/
+    expire_in: 1 week
+
+deploy_production:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - npx wrangler deploy
+
+deploy_preview:
+  stage: deploy
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - SAFE_ALIAS=$(echo "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-+|-+$//g' | cut -c 1-50 | sed -E 's/-+$//g')
+    - npx wrangler versions upload --preview-alias "$SAFE_ALIAS"
