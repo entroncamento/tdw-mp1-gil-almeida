@@ -77,9 +77,15 @@ function HeroPost({
 }
 
 export default async function Page() {
-  const { isEnabled } = await draftMode();
+  let isEnabled = false;
+  try {
+    const draft = await draftMode();
+    isEnabled = draft.isEnabled;
+  } catch {
+    isEnabled = false;
+  }
   const allPosts = await getAllPosts(isEnabled);
-  
+
   if (!allPosts || allPosts.length === 0) {
     return (
       <div className="container mx-auto px-5">
@@ -88,7 +94,7 @@ export default async function Page() {
       </div>
     );
   }
-  
+
   const heroPost = allPosts[0];
   const morePosts = allPosts.slice(1);
 

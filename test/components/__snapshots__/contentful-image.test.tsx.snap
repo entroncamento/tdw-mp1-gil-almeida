@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ContentfulImage component > renders image with custom loader and matches snapshot 1`] = `
+<div>
+  <img
+    alt="Test Image"
+    data-nimg="1"
+    decoding="async"
+    height="300"
+    loading="lazy"
+    src="https://images.ctfassets.net/image.png?w=828&q=75"
+    srcset="https://images.ctfassets.net/image.png?w=640&q=75 1x, https://images.ctfassets.net/image.png?w=828&q=75 2x"
+    style="color: transparent;"
+    width="400"
+  />
+</div>
+`;

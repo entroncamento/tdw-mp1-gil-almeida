@@ -1,0 +1,142 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MoreStories component > renders multiple stories and matches snapshot 1`] = `
+<div>
+  <section>
+    <h2
+      class="mb-8 text-6xl md:text-7xl font-bold tracking-tighter leading-tight"
+    >
+      More Stories
+    </h2>
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 md:gap-x-16 lg:gap-x-32 gap-y-20 md:gap-y-32 mb-32"
+    >
+      <div>
+        <div
+          class="mb-5"
+        >
+          <div
+            class="sm:mx-0"
+          >
+            <a
+              aria-label="Story 1"
+              href="/posts/story-1"
+            >
+              <img
+                alt="Cover Image for Story 1"
+                class="shadow-small [object Object]"
+                data-nimg="1"
+                decoding="async"
+                height="1000"
+                src="https://images.ctfassets.net/story1.jpg?w=3840&q=75"
+                srcset="https://images.ctfassets.net/story1.jpg?w=2048&q=75 1x, https://images.ctfassets.net/story1.jpg?w=3840&q=75 2x"
+                style="color: transparent;"
+                width="2000"
+              />
+            </a>
+          </div>
+        </div>
+        <h3
+          class="text-3xl mb-3 leading-snug"
+        >
+          <a
+            class="hover:underline"
+            href="/posts/story-1"
+          >
+            Story 1
+          </a>
+        </h3>
+        <div
+          class="text-lg mb-4"
+        >
+          <time
+            datetime="2026-01-10T00:00:00.000Z"
+          >
+            January 10, 2026
+          </time>
+        </div>
+        <p
+          class="text-lg leading-relaxed mb-4"
+        >
+          Excerpt for story 1
+        </p>
+        <div
+          class="flex items-center"
+        >
+          <div
+            class="mr-4 w-12 h-12"
+          >
+            <img
+              alt="Jane Doe"
+              class="object-cover h-full rounded-full"
+              data-nimg="1"
+              decoding="async"
+              height="48"
+              loading="lazy"
+              src="https://images.ctfassets.net/jane.jpg?w=96&q=75"
+              srcset="https://images.ctfassets.net/jane.jpg?w=48&q=75 1x, https://images.ctfassets.net/jane.jpg?w=96&q=75 2x"
+              style="color: transparent;"
+              width="48"
+            />
+          </div>
+          <div
+            class="text-xl font-bold"
+          >
+            Jane Doe
+          </div>
+        </div>
+      </div>
+      <div>
+        <div
+          class="mb-5"
+        >
+          <div
+            class="sm:mx-0"
+          >
+            <a
+              aria-label="Story 2"
+              href="/posts/story-2"
+            >
+              <img
+                alt="Cover Image for Story 2"
+                class="shadow-small [object Object]"
+                data-nimg="1"
+                decoding="async"
+                height="1000"
+                src="https://images.ctfassets.net/story2.jpg?w=3840&q=75"
+                srcset="https://images.ctfassets.net/story2.jpg?w=2048&q=75 1x, https://images.ctfassets.net/story2.jpg?w=3840&q=75 2x"
+                style="color: transparent;"
+                width="2000"
+              />
+            </a>
+          </div>
+        </div>
+        <h3
+          class="text-3xl mb-3 leading-snug"
+        >
+          <a
+            class="hover:underline"
+            href="/posts/story-2"
+          >
+            Story 2
+          </a>
+        </h3>
+        <div
+          class="text-lg mb-4"
+        >
+          <time
+            datetime="2026-02-20T00:00:00.000Z"
+          >
+            February 20, 2026
+          </time>
+        </div>
+        <p
+          class="text-lg leading-relaxed mb-4"
+        >
+          Excerpt for story 2
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+`;

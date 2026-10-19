@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Avatar component > renders correctly and matches snapshot 1`] = `
+<div>
+  <div
+    class="flex items-center"
+  >
+    <div
+      class="mr-4 w-12 h-12"
+    >
+      <img
+        alt="John Doe"
+        class="object-cover h-full rounded-full"
+        data-nimg="1"
+        decoding="async"
+        height="48"
+        loading="lazy"
+        src="https://images.ctfassets.net/avatar.jpg?w=96&q=75"
+        srcset="https://images.ctfassets.net/avatar.jpg?w=48&q=75 1x, https://images.ctfassets.net/avatar.jpg?w=96&q=75 2x"
+        style="color: transparent;"
+        width="48"
+      />
+    </div>
+    <div
+      class="text-xl font-bold"
+    >
+      John Doe
+    </div>
+  </div>
+</div>
+`;

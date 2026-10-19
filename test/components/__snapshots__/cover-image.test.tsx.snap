@@ -1,0 +1,46 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CoverImage component > renders with slug and matches snapshot 1`] = `
+<div>
+  <div
+    class="sm:mx-0"
+  >
+    <a
+      aria-label="Sample Article"
+      href="/posts/sample-article"
+    >
+      <img
+        alt="Cover Image for Sample Article"
+        class="shadow-small [object Object]"
+        data-nimg="1"
+        decoding="async"
+        height="1000"
+        src="https://images.ctfassets.net/sample.jpg?w=3840&q=75"
+        srcset="https://images.ctfassets.net/sample.jpg?w=2048&q=75 1x, https://images.ctfassets.net/sample.jpg?w=3840&q=75 2x"
+        style="color: transparent;"
+        width="2000"
+      />
+    </a>
+  </div>
+</div>
+`;
+
+exports[`CoverImage component > renders without slug and matches snapshot 1`] = `
+<div>
+  <div
+    class="sm:mx-0"
+  >
+    <img
+      alt="Cover Image for Sample Article Without Link"
+      class="shadow-small [object Object]"
+      data-nimg="1"
+      decoding="async"
+      height="1000"
+      src="https://images.ctfassets.net/sample2.jpg?w=3840&q=75"
+      srcset="https://images.ctfassets.net/sample2.jpg?w=2048&q=75 1x, https://images.ctfassets.net/sample2.jpg?w=3840&q=75 2x"
+      style="color: transparent;"
+      width="2000"
+    />
+  </div>
+</div>
+`;

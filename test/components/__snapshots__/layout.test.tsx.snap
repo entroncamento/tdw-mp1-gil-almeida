@@ -1,0 +1,57 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`RootLayout component > renders layout with children and matches snapshot 1`] = `
+<div>
+  <html
+    class="--font-inter"
+    lang="en"
+  >
+    <body>
+      <section
+        class="min-h-screen"
+      >
+        <main>
+          <div
+            data-testid="test-child"
+          >
+            Child Content
+          </div>
+        </main>
+        <footer
+          class="bg-accent-1 border-t border-accent-2"
+        >
+          <div
+            class="container mx-auto px-5"
+          >
+            <div
+              class="py-28 flex flex-col lg:flex-row items-center"
+            >
+              <h3
+                class="text-4xl lg:text-5xl font-bold tracking-tighter leading-tight text-center lg:text-left mb-10 lg:mb-0 lg:pr-4 lg:w-1/2"
+              >
+                Criado com Next.js.
+              </h3>
+              <div
+                class="flex flex-col lg:flex-row justify-center items-center lg:pl-4 lg:w-1/2"
+              >
+                <a
+                  class="mx-3 bg-black hover:bg-white hover:text-black border border-black text-white font-bold py-3 px-12 lg:px-8 duration-200 transition-colors mb-6 lg:mb-0"
+                  href="https://nextjs.org/docs"
+                >
+                  Saber mais sobre Next.js
+                </a>
+                <a
+                  class="mx-3 font-bold hover:underline"
+                  href="https://github.com/deca-ua/TDW2026-MP1"
+                >
+                  Ver exemplo no GitHub
+                </a>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </section>
+    </body>
+  </html>
+</div>
+`;

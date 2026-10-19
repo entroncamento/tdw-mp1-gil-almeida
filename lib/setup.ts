@@ -1,3 +1,6 @@
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
 const spaceImport = require("contentful-import");
 const exportFile = require("./export.json");
 
@@ -20,4 +23,4 @@ spaceImport({
   content: exportFile,
 })
   .then(() => console.log("The content model of your space is set up!"))
-  .catch((e) => console.error(e));
+  .catch((e: unknown) => console.error(e));

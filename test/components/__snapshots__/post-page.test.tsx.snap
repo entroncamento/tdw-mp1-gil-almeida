@@ -1,0 +1,171 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PostPage component > renders not found state when post does not exist and matches snapshot 1`] = `
+<div>
+  <div
+    class="container mx-auto px-5 py-12"
+  >
+    <h2
+      class="mb-8 text-2xl font-bold"
+    >
+      <a
+        class="hover:underline"
+        href="/"
+      >
+        ← Voltar ao Blog
+      </a>
+    </h2>
+    <h1
+      class="text-4xl font-bold mb-4"
+    >
+      Artigo não encontrado
+    </h1>
+    <p
+      class="text-gray-600"
+    >
+      O artigo solicitado não foi encontrado ou a configuração do Contentful ainda não foi concluída.
+    </p>
+  </div>
+</div>
+`;
+
+exports[`PostPage component > renders post details and matches snapshot 1`] = `
+<div>
+  <div
+    class="container mx-auto px-5"
+  >
+    <h2
+      class="mb-20 mt-8 text-2xl font-bold leading-tight tracking-tight md:text-4xl md:tracking-tighter"
+    >
+      <a
+        class="hover:underline"
+        href="/"
+      >
+        Blog
+      </a>
+      .
+    </h2>
+    <article>
+      <h1
+        class="mb-12 text-center text-6xl font-bold leading-tight tracking-tighter md:text-left md:text-7xl md:leading-none lg:text-8xl"
+      >
+        Test Post Title
+      </h1>
+      <div
+        class="hidden md:mb-12 md:block"
+      >
+        <div
+          class="flex items-center"
+        >
+          <div
+            class="mr-4 w-12 h-12"
+          >
+            <img
+              alt="Author Name"
+              class="object-cover h-full rounded-full"
+              data-nimg="1"
+              decoding="async"
+              height="48"
+              loading="lazy"
+              src="https://images.ctfassets.net/author.jpg?w=96&q=75"
+              srcset="https://images.ctfassets.net/author.jpg?w=48&q=75 1x, https://images.ctfassets.net/author.jpg?w=96&q=75 2x"
+              style="color: transparent;"
+              width="48"
+            />
+          </div>
+          <div
+            class="text-xl font-bold"
+          >
+            Author Name
+          </div>
+        </div>
+      </div>
+      <div
+        class="mb-8 sm:mx-0 md:mb-16"
+      >
+        <div
+          class="sm:mx-0"
+        >
+          <img
+            alt="Cover Image for Test Post Title"
+            class="shadow-small [object Object]"
+            data-nimg="1"
+            decoding="async"
+            height="1000"
+            src="https://images.ctfassets.net/post.jpg?w=3840&q=75"
+            srcset="https://images.ctfassets.net/post.jpg?w=2048&q=75 1x, https://images.ctfassets.net/post.jpg?w=3840&q=75 2x"
+            style="color: transparent;"
+            width="2000"
+          />
+        </div>
+      </div>
+      <div
+        class="mx-auto max-w-2xl"
+      >
+        <div
+          class="mb-6 block md:hidden"
+        >
+          <div
+            class="flex items-center"
+          >
+            <div
+              class="mr-4 w-12 h-12"
+            >
+              <img
+                alt="Author Name"
+                class="object-cover h-full rounded-full"
+                data-nimg="1"
+                decoding="async"
+                height="48"
+                loading="lazy"
+                src="https://images.ctfassets.net/author.jpg?w=96&q=75"
+                srcset="https://images.ctfassets.net/author.jpg?w=48&q=75 1x, https://images.ctfassets.net/author.jpg?w=96&q=75 2x"
+                style="color: transparent;"
+                width="48"
+              />
+            </div>
+            <div
+              class="text-xl font-bold"
+            >
+              Author Name
+            </div>
+          </div>
+        </div>
+        <div
+          class="mb-6 text-lg"
+        >
+          <time
+            datetime="2026-03-10T00:00:00.000Z"
+          >
+            March 10, 2026
+          </time>
+        </div>
+      </div>
+      <div
+        class="mx-auto max-w-2xl"
+      >
+        <div
+          class="prose"
+        >
+          <p>
+            Content of the post.
+          </p>
+        </div>
+      </div>
+    </article>
+    <hr
+      class="border-accent-2 mt-28 mb-24"
+    />
+    <section>
+      <h2
+        class="mb-8 text-6xl md:text-7xl font-bold tracking-tighter leading-tight"
+      >
+        More Stories
+      </h2>
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 md:gap-x-16 lg:gap-x-32 gap-y-20 md:gap-y-32 mb-32"
+      />
+    </section>
+  </div>
+</div>
+`;

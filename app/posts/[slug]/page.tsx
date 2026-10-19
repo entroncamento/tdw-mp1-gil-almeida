@@ -9,9 +9,13 @@ import CoverImage from "../../cover-image";
 import { Markdown } from "@/lib/markdown";
 import { getAllPosts, getPostAndMorePosts } from "@/lib/api";
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   const allPosts = await getAllPosts(false);
-
+  if (!allPosts || allPosts.length === 0) {
+    return [{ slug: "placeholder" }];
+  }
   return allPosts.map((post) => ({
     slug: post.slug,
   }));
@@ -23,8 +27,31 @@ export default async function PostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { isEnabled } = await draftMode();
+  let isEnabled = false;
+  try {
+    const draft = await draftMode();
+    isEnabled = draft.isEnabled;
+  } catch {
+    isEnabled = false;
+  }
   const { post, morePosts } = await getPostAndMorePosts(slug, isEnabled);
+
+  if (!post) {
+    return (
+      <div className="container mx-auto px-5 py-12">
+        <h2 className="mb-8 text-2xl font-bold">
+          <Link href="/" className="hover:underline">
+            ← Voltar ao Blog
+          </Link>
+        </h2>
+        <h1 className="text-4xl font-bold mb-4">Artigo não encontrado</h1>
+        <p className="text-gray-600">
+          O artigo solicitado não foi encontrado ou a configuração do Contentful
+          ainda não foi concluída.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-5">
