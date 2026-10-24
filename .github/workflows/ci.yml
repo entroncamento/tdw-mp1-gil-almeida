@@ -5,6 +5,7 @@ on:
     branches:
       - main
   pull_request:
+    types: [opened, synchronize, reopened]
   repository_dispatch:
   schedule:
     - cron: "0 0 * * *"
@@ -205,3 +206,204 @@ jobs:
             ${{ needs.preview.outputs.url }}
           uploadArtifacts: true
           temporaryPublicStorage: true
+
+  ai-code-review:
+    name: AI Code Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract PR diff
+        id: pr_diff
+        shell: bash
+        run: |
+          # Fetch the target base branch to ensure full diff history
+          git fetch origin "${{ github.base_ref }}" --depth=100
+
+          # Extract diff against target branch, excluding lockfiles and build outputs
+          git diff "origin/${{ github.base_ref }}...HEAD" \
+            -- . \
+            ':(exclude)package-lock.json' \
+            ':(exclude)*.lock' \
+            ':(exclude)out' \
+            ':(exclude).next' \
+            ':(exclude)coverage' \
+            ':(exclude)dist' \
+            > pr_diff.txt
+
+          # If the branch diff is empty, attempt SHA fallback
+          if [ ! -s pr_diff.txt ]; then
+            echo "Branch diff was empty. Attempting SHA-to-SHA comparison..."
+            git diff "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" \
+              -- . \
+              ':(exclude)package-lock.json' \
+              ':(exclude)*.lock' \
+              > pr_diff.txt || true
+          fi
+
+          echo "Diff extracted successfully ($(wc -c < pr_diff.txt) bytes)."
+
+      - name: Review code with Gemini and post comment
+        uses: actions/github-script@v8
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-2.5-flash
+        with:
+          script: |
+            const fs = require('fs');
+
+            const apiKey = process.env.GEMINI_API_KEY;
+            if (!apiKey) {
+              core.warning('GEMINI_API_KEY secret is not configured. Skipping AI code review.');
+              return;
+            }
+
+            // Read the diff generated from git
+            let diff = '';
+            if (fs.existsSync('pr_diff.txt')) {
+              diff = fs.readFileSync('pr_diff.txt', 'utf8');
+            }
+
+            // Fallback: Fetch diff directly via GitHub API if local git diff was empty
+            if (!diff || !diff.trim()) {
+              core.info('Local diff is empty. Fetching diff via GitHub API...');
+              try {
+                const response = await github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.issue.number,
+                  mediaType: { format: 'diff' }
+                });
+                diff = response.data;
+              } catch (err) {
+                core.warning(`Failed to fetch diff from GitHub API: ${err.message}`);
+              }
+            }
+
+            if (!diff || !diff.trim()) {
+              core.info('No code changes detected in this Pull Request. Skipping review.');
+              return;
+            }
+
+            // Truncate diff if it exceeds reasonable size limits
+            const MAX_DIFF_LENGTH = 60000;
+            let truncatedDiff = diff;
+            if (diff.length > MAX_DIFF_LENGTH) {
+              truncatedDiff = diff.slice(0, MAX_DIFF_LENGTH) + '\n\n... [Diff truncado devido ao limite de tamanho para análise] ...';
+            }
+
+            const systemPrompt = `És um Engenheiro DevOps e Tech Lead especialista em TypeScript, React, Next.js e Engenharia de Software.
+            A tua missão é realizar uma revisão de código (Code Review) rigorosa, construtiva e acionável das alterações feitas no Pull Request.
+
+            Diretrizes da Revisão:
+            1. Resumo Executivo:
+               - Breve resumo das mudanças introduzidas.
+               - Avaliação global de impacto e risco (🟢 Baixo, 🟡 Médio, 🔴 Alto).
+
+            2. Deteção de Bugs e Segurança:
+               - Identificar falhas de lógica, memory leaks, race conditions e casos de fronteira (edge cases).
+               - Segurança: verificar vulnerabilidades (ex: injeção, XSS, exposição de segredos ou variáveis sensíveis).
+
+            3. Boas Práticas de TypeScript & React / Next.js:
+               - Tipagem estrita: evitar uso de 'any', assegurar tipagem correta de props, estados e retornos.
+               - Padrões React/Next.js: regras de hooks (dependências de useEffect, useMemo, useCallback), renderizações desnecessárias, Server vs Client Components.
+               - Performance e otimização: operações assíncronas bloqueantes, carregamento de recursos.
+
+            4. Limpeza de Código e Manutenibilidade:
+               - Princípios Clean Code, legibilidade, modularidade e padrões de projeto.
+               - Fornecer sugestões práticas de código ("Antes" vs "Depois") para melhorias significativas.
+
+            5. Conclusão:
+               - Se o código estiver limpo e sem problemas, elogia os bons padrões e confirma que está pronto para aprovação.
+
+            Formato da Resposta:
+            - Escreve em Português de forma profissional, clara e concisa.
+            - Utiliza Markdown estruturado (títulos, listas, badges e blocos de código com syntax highlighting).`;
+
+            const userPrompt = "Por favor, faz a revisão de código das seguintes alterações (diff) do Pull Request:\n\n```diff\n" + truncatedDiff + "\n```";
+
+            async function callGemini(modelName) {
+              const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+              return await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                  },
+                  contents: [
+                    {
+                      role: 'user',
+                      parts: [{ text: userPrompt }]
+                    }
+                  ],
+                  generationConfig: {
+                    temperature: 0.2,
+                    maxOutputTokens: 4096
+                  }
+                })
+              });
+            }
+
+            let chosenModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+            core.info(`A submeter diff à API do Google Gemini (Modelo: ${chosenModel})...`);
+
+            let response = await callGemini(chosenModel);
+
+            // Fallback para gemini-1.5-flash caso o modelo configurado não esteja disponível (404)
+            if (!response.ok && response.status === 404 && chosenModel !== 'gemini-1.5-flash') {
+              core.info(`Modelo ${chosenModel} retornou 404. A tentar fallback para gemini-1.5-flash...`);
+              chosenModel = 'gemini-1.5-flash';
+              response = await callGemini(chosenModel);
+            }
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Erro na API do Gemini (${response.status}): ${errorText}`);
+            }
+
+            const data = await response.json();
+            const reviewText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!reviewText) {
+              throw new Error('A API do Gemini não retornou conteúdo na resposta.');
+            }
+
+            const botIdentifier = '<!-- ai-code-review-bot -->';
+            const issueNumber = context.payload.pull_request?.number || context.issue.number;
+            const commentBody = `${botIdentifier}\n## 🤖 Revisão de Código por IA (Google Gemini - \`${chosenModel}\`)\n\n${reviewText}\n\n---\n*Revisão automática gerada pelo Code Review Bot com Google Gemini.*`;
+
+            // Procura comentário anterior para atualizar (evita spam em múltiplos commits/synchronize)
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+            });
+
+            const existingComment = comments.find(c => c.body && c.body.includes(botIdentifier));
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+              core.info(`Comentário anterior do bot atualizado com sucesso (ID: ${existingComment.id}).`);
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: commentBody
+              });
+              core.info('Novo comentário de revisão publicado com sucesso no PR.');
+            }
