@@ -247,7 +247,7 @@ jobs:
         uses: actions/github-script@v8
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: gemini-2.5-flash
+          GEMINI_MODEL: gemini-3.8-flash
         with:
           script: |
             const fs = require('fs');
