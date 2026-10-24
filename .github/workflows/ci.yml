@@ -255,7 +255,7 @@ jobs:
         uses: actions/github-script@v8
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: gemini-2.5-flash
+          GEMINI_MODEL: gemini-1.5-flash
         with:
           script: |
             const fs = require('fs');
@@ -331,7 +331,7 @@ jobs:
             const userPrompt = "Por favor, faz a revisão de código das seguintes alterações (diff) do Pull Request:\n\n```diff\n" + truncatedDiff + "\n```";
 
             async function callGemini(modelName) {
-              const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+              const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
               return await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -353,17 +353,10 @@ jobs:
               });
             }
 
-            let chosenModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+            const chosenModel = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
             core.info(`A submeter diff à API do Google Gemini (Modelo: ${chosenModel})...`);
 
-            let response = await callGemini(chosenModel);
-
-            // Fallback para gemini-1.5-flash caso o modelo configurado não esteja disponível (404)
-            if (!response.ok && response.status === 404 && chosenModel !== 'gemini-1.5-flash') {
-              core.info(`Modelo ${chosenModel} retornou 404. A tentar fallback para gemini-1.5-flash...`);
-              chosenModel = 'gemini-1.5-flash';
-              response = await callGemini(chosenModel);
-            }
+            const response = await callGemini(chosenModel);
 
             if (!response.ok) {
               const errorText = await response.text();
