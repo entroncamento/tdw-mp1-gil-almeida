@@ -54,7 +54,7 @@ unit_test:
 # --------------------------------------------------
 # BUILD
 # Executa no main e em cada Merge Request.
-# Passa as variáveis necessárias do Contentful.
+# Usa as variáveis definidas em Settings > CI/CD > Variables.
 # O artefacto out/ é reutilizado pelos deploys.
 # --------------------------------------------------
 build:
@@ -63,23 +63,23 @@ build:
     - lint
     - format
     - unit_test
-  variables:
-    CONTENTFUL_SPACE_ID: $CONTENTFUL_SPACE_ID
-    CONTENTFUL_ACCESS_TOKEN: $CONTENTFUL_ACCESS_TOKEN
-    CONTENTFUL_PREVIEW_ACCESS_TOKEN: $CONTENTFUL_PREVIEW_ACCESS_TOKEN
   before_script:
     - |
       if [ -z "${CONTENTFUL_SPACE_ID:-}" ]; then
-        echo "WARNING: CONTENTFUL_SPACE_ID is not set or is empty in GitLab CI/CD variables."
-        echo "Please configure it in Settings > CI/CD > Variables."
-        echo "For merge request pipelines, check whether the variable is protected."
+        echo "ERROR: CONTENTFUL_SPACE_ID is missing or empty in GitLab CI/CD variables."
+        echo "Configure it in Settings > CI/CD > Variables."
+        echo "For merge request pipelines, verify whether the variable is protected."
+        exit 1
       fi
 
       if [ -z "${CONTENTFUL_ACCESS_TOKEN:-}" ]; then
-        echo "WARNING: CONTENTFUL_ACCESS_TOKEN is not set or is empty in GitLab CI/CD variables."
-        echo "Please configure it in Settings > CI/CD > Variables."
-        echo "For merge request pipelines, check whether the variable is protected."
+        echo "ERROR: CONTENTFUL_ACCESS_TOKEN is missing or empty in GitLab CI/CD variables."
+        echo "Configure it in Settings > CI/CD > Variables."
+        echo "For merge request pipelines, verify whether the variable is protected."
+        exit 1
       fi
+
+      echo "Contentful configuration variables are present."
   script:
     - npm ci --cache .npm --prefer-offline
     - npm run build
