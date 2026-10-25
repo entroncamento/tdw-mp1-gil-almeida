@@ -19,11 +19,7 @@ stages:
   - review
 
 # --------------------------------------------------
-# Regras de fluxo da pipeline:
-# - Executa em eventos de Merge Request
-# - Evita pipelines duplicadas no branch quando há MR aberta
-# - Executa no branch principal (main) e outros branches
-# - Suporta execução manual (web) e agendada (schedule)
+# Regras de fluxo da pipeline
 # --------------------------------------------------
 
 workflow:
@@ -74,6 +70,19 @@ build:
     CONTENTFUL_SPACE_ID: $CONTENTFUL_SPACE_ID
     CONTENTFUL_ACCESS_TOKEN: $CONTENTFUL_ACCESS_TOKEN
     CONTENTFUL_PREVIEW_ACCESS_TOKEN: $CONTENTFUL_PREVIEW_ACCESS_TOKEN
+  before_script:
+    - |
+      if [ -z "${CONTENTFUL_SPACE_ID:-}" ]; then
+        echo "WARNING: CONTENTFUL_SPACE_ID is not set or is empty in GitLab CI/CD variables."
+        echo "Please configure it in Settings > CI/CD > Variables."
+        echo "For merge request pipelines, check whether the variable is protected."
+      fi
+
+      if [ -z "${CONTENTFUL_ACCESS_TOKEN:-}" ]; then
+        echo "WARNING: CONTENTFUL_ACCESS_TOKEN is not set or is empty in GitLab CI/CD variables."
+        echo "Please configure it in Settings > CI/CD > Variables."
+        echo "For merge request pipelines, check whether the variable is protected."
+      fi
   script:
     - npm ci --cache .npm --prefer-offline
     - npm run build
@@ -102,8 +111,6 @@ deploy_production:
 
 # --------------------------------------------------
 # PREVIEW POR MERGE REQUEST
-# Cria um alias a partir do nome do branch.
-# Exporta o URL para os jobs seguintes via dotenv.
 # --------------------------------------------------
 
 deploy_preview:
@@ -133,18 +140,18 @@ deploy_preview:
 
       npx --yes wrangler versions upload --preview-alias "$SAFE_ALIAS" 2>&1 | tee wrangler-preview.log
 
-      # Limpa sequências de escape ANSI para correspondência regex fiável
+      # Limpa sequências de escape ANSI
       sed -E 's/\x1B\[[0-9;]*[a-zA-Z]//g' wrangler-preview.log > wrangler-preview-clean.log
 
-      # 1. Tentar URL padrão Cloudflare Workers (.workers.dev)
+      # 1. Tentar URL padrão Cloudflare Workers
       PREVIEW_URL=$(grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' wrangler-preview-clean.log | head -n 1 || true)
 
-      # 2. Alternativa Cloudflare Pages (.pages.dev)
+      # 2. Alternativa Cloudflare Pages
       if [ -z "$PREVIEW_URL" ]; then
         PREVIEW_URL=$(grep -oE 'https://[a-zA-Z0-9.-]+\.pages\.dev' wrangler-preview-clean.log | head -n 1 || true)
       fi
 
-      # 3. Fallback para outro URL https relevante, excluindo dashboards e docs da Cloudflare / GitHub
+      # 3. Fallback para outro URL HTTPS relevante
       if [ -z "$PREVIEW_URL" ]; then
         PREVIEW_URL=$(grep -oE 'https://[a-zA-Z0-9.-]+' wrangler-preview-clean.log | grep -v -E 'cloudflare\.com|github\.com' | head -n 1 || true)
       fi
@@ -168,7 +175,6 @@ deploy_preview:
 
 # --------------------------------------------------
 # COMENTÁRIO DO PREVIEW NA MERGE REQUEST
-# Atualiza o comentário anterior em vez de duplicá-lo.
 # Requer GITLAB_API_TOKEN com permissões API.
 # --------------------------------------------------
 
@@ -239,8 +245,6 @@ preview_comment:
 
 # --------------------------------------------------
 # LIGHTHOUSE
-# Executa apenas se existir um PREVIEW_URL válido.
-# Audita o URL publicado pelo job de preview.
 # --------------------------------------------------
 
 lighthouse:
@@ -256,9 +260,11 @@ lighthouse:
         echo "Valid PREVIEW_URL is not available ('${PREVIEW_URL:-}'). Aborting Lighthouse audit."
         exit 1
       fi
+
       if ! command -v chromium >/dev/null 2>&1 && ! command -v google-chrome >/dev/null 2>&1; then
         apt-get update && apt-get install -y --no-install-recommends chromium
       fi
+
       export CHROME_PATH=$(command -v chromium || command -v google-chrome || true)
   script:
     - npm exec --yes --package=@lhci/cli -- lhci autorun --collect.url="$PREVIEW_URL" --collect.settings.chromeFlags="--no-sandbox --headless --disable-gpu" --upload.target=temporary-public-storage
@@ -270,8 +276,7 @@ lighthouse:
 
 # --------------------------------------------------
 # AI CODE REVIEW COM GEMINI
-# Não bloqueia a pipeline (allow_failure: true).
-# Utiliza GEMINI_API_KEY e configurações de modelo.
+# Não bloqueia a pipeline.
 # --------------------------------------------------
 
 ai_code_review:

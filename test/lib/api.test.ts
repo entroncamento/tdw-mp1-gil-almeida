@@ -82,4 +82,66 @@ describe("api library", () => {
     const post = await getPreviewPostBySlug("preview-1");
     expect(post).toEqual(mockPost);
   });
+
+  it("handles missing CONTENTFUL_SPACE_ID gracefully", async () => {
+    const originalSpaceId = process.env.CONTENTFUL_SPACE_ID;
+    try {
+      delete process.env.CONTENTFUL_SPACE_ID;
+      const posts = await getAllPosts(false);
+      expect(posts).toEqual([]);
+    } finally {
+      process.env.CONTENTFUL_SPACE_ID = originalSpaceId;
+    }
+  });
+
+  it("handles missing access token gracefully", async () => {
+    const originalToken = process.env.CONTENTFUL_ACCESS_TOKEN;
+    const originalPreviewToken = process.env.CONTENTFUL_PREVIEW_ACCESS_TOKEN;
+    try {
+      delete process.env.CONTENTFUL_ACCESS_TOKEN;
+      delete process.env.CONTENTFUL_PREVIEW_ACCESS_TOKEN;
+      const posts = await getAllPosts(false);
+      expect(posts).toEqual([]);
+    } finally {
+      process.env.CONTENTFUL_ACCESS_TOKEN = originalToken;
+      process.env.CONTENTFUL_PREVIEW_ACCESS_TOKEN = originalPreviewToken;
+    }
+  });
+
+  it("handles unexpected non-JSON HTML response gracefully without crashing", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      status: 404,
+      statusText: "Not Found",
+      headers: {
+        get: (h: string) =>
+          h.toLowerCase() === "content-type" ? "text/html" : null,
+      },
+      text: () =>
+        Promise.resolve(
+          "<html><head><title>404 Not Found</title></head></html>",
+        ),
+    } as any);
+
+    const posts = await getAllPosts(false);
+    expect(posts).toEqual([]);
+  });
+
+  it("handles HTTP error status safely", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      statusText: "Unauthorized",
+      headers: {
+        get: (h: string) =>
+          h.toLowerCase() === "content-type" ? "application/json" : null,
+      },
+      json: () =>
+        Promise.resolve({
+          errors: [{ message: "Authentication failed" }],
+        }),
+    } as any);
+
+    const posts = await getAllPosts(false);
+    expect(posts).toEqual([]);
+  });
 });
