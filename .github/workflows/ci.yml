@@ -263,24 +263,40 @@ jobs:
             }
 
   lighthouse:
-    name: Lighthouse audit
-    needs: [preview]
+    needs: preview
     if: needs.preview.result == 'success' && needs.preview.outputs.url != ''
     permissions:
       contents: read
+      statuses: write
     runs-on: ubuntu-latest
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
       - name: Validate preview URL
         shell: bash
         env:
           PREVIEW_URL: ${{ needs.preview.outputs.url }}
         run: |
           set -euo pipefail
-          [[ "${PREVIEW_URL:-}" =~ ^https://[A-Za-z0-9.-]+\.workers\.dev$ ]] || { echo "::error::A valid preview URL was not produced."; exit 1; }
+
+          if [[ ! "${PREVIEW_URL:-}" =~ ^https://[A-Za-z0-9.-]+\.workers\.dev$ ]]; then
+            echo "::error::A valid preview URL was not produced."
+            exit 1
+          fi
+
       - name: Run Lighthouse audit
         uses: treosh/lighthouse-ci-action@v12
+        env:
+          LHCI_BUILD_CONTEXT__CURRENT_HASH: ${{ github.event.pull_request.head.sha || github.sha }}
+          LHCI_BUILD_CONTEXT__CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          urls: ${{ needs.preview.outputs.url }}
+          urls: |
+            ${{ needs.preview.outputs.url }}
           uploadArtifacts: true
           temporaryPublicStorage: true
 
