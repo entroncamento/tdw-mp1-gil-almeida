@@ -10,7 +10,7 @@ on:
     types: [contentful-publish]
   # Keep enabled until a scheduled run has been verified, then remove this block.
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 # Least-privilege default. Jobs that comment on PRs opt in below.
